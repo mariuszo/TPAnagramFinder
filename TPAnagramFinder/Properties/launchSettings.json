@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TPAnagramFinder": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\mariu\\Desktop\\wordlist"
+    }
+  }
+}

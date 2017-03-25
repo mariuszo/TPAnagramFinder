@@ -1,0 +1,8 @@
+TEST:also input towy ruts, elapsed: 00:00:02.0806238
+EASY:printout stout yawls, elapsed: 00:01:02.6158094
+EASY:printout stout yawls, elapsed: 00:02:18.7620407
+EASY:printout stout yawls, elapsed: 00:01:03.5721037
+EASY:printout stout yawls, elapsed: 00:01:34.5588525
+EASY:printout stout yawls, elapsed: 00:01:26.7856753
+EASY:printout stout yawls, elapsed: 00:01:25.6459810
+EASY:printout stout yawls, elapsed: 00:00:49.2879756

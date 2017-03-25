@@ -1,0 +1,5 @@
+TPAnagramFinder/bin/**
+TPAnagramFinder/obj/**
+TPAnagramFinder.Tests/bin/**
+TPAnagramFinder.Tests/obj/**
+.vs/**
