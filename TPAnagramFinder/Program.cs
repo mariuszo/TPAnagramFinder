@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -28,19 +29,69 @@ namespace TPAnagramFinder
             var testHashMatches = GetHashMatcher(GetHashStringBytes(TestHash));
             var easyHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashEasy));
             var mediumHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashMedium));
-            //var hardHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashHard));
-
-            var trie = new TrieAnagramSolver(wordlist, Phrase);
+            var hardHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashHard));
 
             var sw = Stopwatch.StartNew();
-            foreach (var phrase in trie.FindAnagrams())
+
+            var trie = new TrieAnagramSolver(wordlist, Phrase);
+            foreach (var phrase in trie.FindAnagrams().Where(a => !string.IsNullOrEmpty(a)))
             {
-                if (mediumHashMatches(phrase))
+                if (easyHashMatches(phrase))
                 {
-                    LogResult($"MED:{phrase}, elapsed: {sw.Elapsed}");
+                    LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
                     break;
                 }
             }
+
+            //var solver = new AnagramSolver(wordlist, Phrase);
+            //foreach (var phrase in solver.GetSentenceAnagrams(Phrase))
+            //{
+            //    if (easyHashMatches(phrase))
+            //    {
+            //        LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
+            //        break;
+            //    }
+            //}
+
+            //var solver = new AnagramGenerator3000(wordlist);
+            //foreach (var phrase in solver.FindAnagrams(Phrase))
+            //{
+            //    Console.WriteLine(phrase);
+            //    if (easyHashMatches(phrase))
+            //    {
+            //        LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
+            //        break;
+            //    }
+            //}
+
+
+            //var p = string.Join("", Phrase.Trim().Replace(" ", "").ToLower().OrderBy(_ => _));
+            //var solver = new CombinationAnagramSolver(wordlist, p);
+
+            //var pperms = solver.GetLetterPermutations(p).ToList();
+            //Console.WriteLine($"Phrase permutations: {pperms.Count}");
+
+            //var parts0 = solver.GetPhrasePartitions(p).ToList();
+            //var parts = solver.GetValidPartitions(p).ToList();
+            //Console.WriteLine($"Valid permutations: {parts.Count()}");
+
+            //var sentences = parts.AsParallel().SelectMany(per => solver.GetPartitionSentences(per)).ToList();
+            //Console.WriteLine($"Sentences: {sentences.Count}");
+
+            //var perms = sentences.AsParallel().SelectMany(solver.GetSentencePermutations);
+            //Console.WriteLine($"Sentence permutations: {perms.Count}");
+
+            //foreach (var phrase in perms)
+            //{
+            //if (easyHashMatches(phrase))
+            //{
+            //    LogResult($"MED:{phrase}, elapsed: {sw.Elapsed}");
+            //    break;
+            //}
+            //}
+            //var solver = new AnagramGenerator3000(wordlist);
+            //solver.FindAnagrams(Phrase);
+
             sw.Stop();
 
             Console.WriteLine($"Done, elapsed: {sw.Elapsed}");

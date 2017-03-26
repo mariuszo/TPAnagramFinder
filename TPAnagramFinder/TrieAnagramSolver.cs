@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace TPAnagramFinder
 {
@@ -35,7 +36,8 @@ namespace TPAnagramFinder
             }
         }
 
-        private const int MinWordLength = 3;
+        private const int MinWordLength = 4;
+        private const int MaxWords = 4;
 
         private readonly TrieNode _root;
 
@@ -56,13 +58,20 @@ namespace TPAnagramFinder
 
             _phraseLength = phrase.Length;
 
-            foreach (var word in words.Where(w => w.Length >= MinWordLength).Where(IsWordSubsetOfAvailableLetters))
+            words = words
+                .Where(w => w.Length >= MinWordLength)
+                .Where(w => w.IsSubSet(phrase))
+                .Where(w => w.Length != 1 || new[] { "a", "i", "o" }.Contains(w))
+                .Distinct()
+                .ToArray();
+
+            foreach (var word in words)
                 AddWord(word);
         }
 
         public IEnumerable<string> FindAnagrams()
         {
-            return FindPhrases(_phraseLetters, new Stack<char>(), _root);
+            return FindPhrases(_phraseLetters, new StringBuilder(), _root);
         }
 
         private void AddWord(string word)
@@ -83,16 +92,26 @@ namespace TPAnagramFinder
             return !word.Except(_phrase).Any();
         }
 
-        private IEnumerable<string> FindPhrases(Dictionary<char, int> phraseLetters, Stack<char> currentPhrase, TrieNode currentNode)
+        private IEnumerable<string> FindPhrases(Dictionary<char, int> availableLetters, StringBuilder currentPhrase, TrieNode currentNode)
         {
             if (currentNode.EndOfWord)
             {
-                if (currentPhrase.Count >= _phraseLength) //Good enough
-                    yield return string.Join("", currentPhrase.Reverse());
+                //if (currentPhrase.Count(c => char.IsWhiteSpace(c)) >= MaxWords - 1)
+                //{
+                //    yield break;
+                //}
 
-                currentPhrase.Push(' ');
+                if (currentPhrase.Length >= _phraseLength) //Good enough???
+                    yield return currentPhrase.ToString();
 
-                foreach (var phrase in FindPhrases(phraseLetters, currentPhrase, _root))
+                //if(availableLetters.Sum(l => l.Value) <= 0)
+                //{
+                //    yield break;
+                //}
+
+                currentPhrase.Append(" ");
+
+                foreach (var phrase in FindPhrases(availableLetters, currentPhrase, _root))
                     yield return phrase;
 
                 currentPhrase.Pop();
@@ -100,17 +119,17 @@ namespace TPAnagramFinder
 
             foreach (var childNode in currentNode.Children)
             {
-                if(phraseLetters[childNode.Key] == 0)
+                if(availableLetters[childNode.Key] == 0)
                     continue;
 
-                currentPhrase.Push(childNode.Key);
-                phraseLetters[childNode.Key]--;
+                currentPhrase.Append(childNode.Key);
+                availableLetters[childNode.Key]--;
 
-                foreach (var phrase in FindPhrases(phraseLetters, currentPhrase, childNode.Value))
+                foreach (var phrase in FindPhrases(availableLetters, currentPhrase, childNode.Value))
                     yield return phrase;
 
                 currentPhrase.Pop();
-                phraseLetters[childNode.Key]++;
+                availableLetters[childNode.Key]++;
             }
         }
     }
