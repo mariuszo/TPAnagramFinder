@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -56,7 +57,8 @@ namespace TPAnagramFinder
             var solver = new AnagramGenerator3000(wordlist, 4);
             var letterInventory = string.Join("", Phrase.Replace(" ", "").Trim().ToLower().OrderBy(_ => _));
             solver.BuildDictionary(letterInventory);
-            var combos = solver.GetKeyCombinations(solver.BuildLetterInventory(letterInventory)).ToList();
+
+            //var combos = solver.GetKeyCombinations(solver.BuildLetterInventory(letterInventory)).ToList();
             //var sentences = solver.GetSentences(combos).ToList();
  
             //var p = string.Join("", Phrase.Trim().Replace(" ", "").ToLower().OrderBy(_ => _));

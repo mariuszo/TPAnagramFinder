@@ -8,35 +8,30 @@ namespace TPAnagramFinder
     {
         internal class TrieNode
         {
-            private readonly char _letter;
-
             public Dictionary<char, TrieNode> Children { get; private set; }
 
-            public string Word { get; set; }
+            public bool IsTerminal { get; set; }
 
-            public bool EndOfWord => !string.IsNullOrEmpty(Word);
-
-            public TrieNode(char letter)
+            public TrieNode()
             {
-                _letter = letter;
                 Children = new Dictionary<char, TrieNode>();
             }
 
             public TrieNode GetChild(char letter)
             {
                 if (!Children.ContainsKey(letter))
-                    Children[letter] = new TrieNode(letter);
+                    Children[letter] = new TrieNode();
 
                 return Children[letter];
             }
 
             public override string ToString()
             {
-                return $"Node: {_letter} | Children count: {Children.Count} | Word: {Word}";
+                return $"Node: Children count: {Children.Count} | IsFinal: {IsTerminal}";
             }
         }
 
-        private const int MinWordLength = 4;
+        private const int MinWordLength = 3;
         private const int MaxWords = 4;
 
         private readonly TrieNode _root;
@@ -47,7 +42,7 @@ namespace TPAnagramFinder
 
         public TrieAnagramSolver(string[] words, string phrase)
         {
-            _root = new TrieNode(' ');
+            _root = new TrieNode();
             _phrase = phrase;
             _phraseLetters = phrase
                 .Replace(" ", "")
@@ -84,7 +79,7 @@ namespace TPAnagramFinder
                 current = current.GetChild(letter);
             }
 
-            current.Word = word;
+            current.IsTerminal = true;
         }
 
         private bool IsWordSubsetOfAvailableLetters(string word)
@@ -92,14 +87,50 @@ namespace TPAnagramFinder
             return !word.Except(_phrase).Any();
         }
 
+        private readonly List<string> Anagrams = new List<string>();
+
+        //private void FindPhrases(Dictionary<char, int> availableLetters, StringBuilder currentPhrase, TrieNode currentNode)
+        //{
+        //    if (currentNode.IsTerminal)
+        //    {
+        //        if (currentPhrase.WhiteSpaceCount() >= MaxWords - 1)
+        //        {
+        //            return;
+        //        }
+
+        //        if (currentPhrase.Length >= _phraseLength) //Good enough???
+        //            Anagrams.Add(currentPhrase.ToString());
+
+        //        currentPhrase.Append(" ");
+
+        //        FindPhrases(availableLetters, currentPhrase, _root);
+
+        //        currentPhrase.Pop();
+        //    }
+
+        //    foreach (var childNode in currentNode.Children)
+        //    {
+        //        if (availableLetters[childNode.Key] == 0)
+        //            continue;
+
+        //        currentPhrase.Append(childNode.Key);
+        //        availableLetters[childNode.Key]--;
+
+        //        FindPhrases(availableLetters, currentPhrase, childNode.Value);
+
+        //        currentPhrase.Pop();
+        //        availableLetters[childNode.Key]++;
+        //    }
+        //}
+
         private IEnumerable<string> FindPhrases(Dictionary<char, int> availableLetters, StringBuilder currentPhrase, TrieNode currentNode)
         {
-            if (currentNode.EndOfWord)
+            if (currentNode.IsTerminal)
             {
-                //if (currentPhrase.Count(c => char.IsWhiteSpace(c)) >= MaxWords - 1)
-                //{
-                //    yield break;
-                //}
+                if (currentPhrase.WhiteSpaceCount() > MaxWords - 1)
+                {
+                    yield break;
+                }
 
                 if (currentPhrase.Length >= _phraseLength) //Good enough???
                     yield return currentPhrase.ToString();
@@ -119,7 +150,7 @@ namespace TPAnagramFinder
 
             foreach (var childNode in currentNode.Children)
             {
-                if(availableLetters[childNode.Key] == 0)
+                if (availableLetters[childNode.Key] == 0)
                     continue;
 
                 currentPhrase.Append(childNode.Key);
