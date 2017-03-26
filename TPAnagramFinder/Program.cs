@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace TPAnagramFinder
 {
@@ -19,12 +19,12 @@ namespace TPAnagramFinder
         //also input towy ruts
         private const string TestHash = "8c2ea82e9a1d56db0d597e5798307a4a";
 
-        private static MD5 _md5;
+        private static ThreadLocal<MD5> _md5;
 
         private static void Main(string[] args)
         {
             var wordlist = File.ReadAllLines(args[0]);
-            _md5 = MD5.Create();
+            _md5 = new ThreadLocal<MD5>(() => MD5.Create());
 
             var testHashMatches = GetHashMatcher(GetHashStringBytes(TestHash));
             var easyHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashEasy));
@@ -33,15 +33,15 @@ namespace TPAnagramFinder
 
             var sw = Stopwatch.StartNew();
 
-            var trie = new TrieAnagramSolver(wordlist, Phrase);
-            foreach (var phrase in trie.FindAnagrams().Where(a => !string.IsNullOrEmpty(a)))
-            {
-                if (easyHashMatches(phrase))
-                {
-                    LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
-                    break;
-                }
-            }
+            //var trie = new TrieAnagramSolver(wordlist, Phrase);
+            //foreach (var phrase in trie.FindAnagrams())
+            //{
+            //    if (mediumHashMatches(phrase))
+            //    {
+            //        LogResult($"MED:{phrase}, elapsed: {sw.Elapsed}");
+            //        break;
+            //    }
+            //}
 
             //var solver = new AnagramSolver(wordlist, Phrase);
             //foreach (var phrase in solver.GetSentenceAnagrams(Phrase))
@@ -53,18 +53,12 @@ namespace TPAnagramFinder
             //    }
             //}
 
-            //var solver = new AnagramGenerator3000(wordlist);
-            //foreach (var phrase in solver.FindAnagrams(Phrase))
-            //{
-            //    Console.WriteLine(phrase);
-            //    if (easyHashMatches(phrase))
-            //    {
-            //        LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
-            //        break;
-            //    }
-            //}
-
-
+            var solver = new AnagramGenerator3000(wordlist, 4);
+            var letterInventory = string.Join("", Phrase.Replace(" ", "").Trim().ToLower().OrderBy(_ => _));
+            solver.BuildDictionary(letterInventory);
+            var combos = solver.GetKeyCombinations(solver.BuildLetterInventory(letterInventory)).ToList();
+            //var sentences = solver.GetSentences(combos).ToList();
+ 
             //var p = string.Join("", Phrase.Trim().Replace(" ", "").ToLower().OrderBy(_ => _));
             //var solver = new CombinationAnagramSolver(wordlist, p);
 
@@ -110,7 +104,7 @@ namespace TPAnagramFinder
 
         private static Func<string, bool> GetHashMatcher(byte[] hashBytes)
         {
-            return (input) => _md5.ComputeHash(Encoding.ASCII.GetBytes(input)).SequenceEqual(hashBytes);
+            return (input) => _md5.Value.ComputeHash(Encoding.ASCII.GetBytes(input)).SequenceEqual(hashBytes);
         }
 
         private static byte[] GetHashStringBytes(string hash)

@@ -14,5 +14,10 @@ namespace TPAnagramFinder
         {
             return builder.Remove(builder.Length - 1, 1);
         }
+
+        public static int WhiteSpaceCount(this StringBuilder builder)
+        {
+            return builder.ToString().Count(char.IsWhiteSpace);
+        }
     }
 }
