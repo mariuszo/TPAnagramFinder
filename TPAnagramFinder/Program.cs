@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace TPAnagramFinder
 {
@@ -44,50 +46,41 @@ namespace TPAnagramFinder
             //    }
             //}
 
-            //var solver = new AnagramSolver(wordlist, Phrase);
-            //foreach (var phrase in solver.GetSentenceAnagrams(Phrase))
-            //{
-            //    if (easyHashMatches(phrase))
-            //    {
-            //        LogResult($"EASY:{phrase}, elapsed: {sw.Elapsed}");
-            //        break;
-            //    }
-            //}
+            var results = new ConcurrentBag<string>();
+            long found = 0;
 
             var solver = new AnagramGenerator3000(wordlist, 1, 4);
             solver.BuildDictionary(Phrase);
-            //var combos = solver.GenerateVectorCombinations().ToList();
-            //var combos = solver.GetKeyCombinations().ToList();
-            //var sentences = solver.GetSentences(combos).ToList();
- 
-            //var p = string.Join("", Phrase.Trim().Replace(" ", "").ToLower().OrderBy(_ => _));
-            //var solver = new CombinationAnagramSolver(wordlist, p);
+            var combos = solver.GenerateVectorCombinations().ToList();
+            var keys = solver.ConvertVectorCombinationsToKeyCombinations(combos).ToList();
+            var sentences = solver.GetSentences(keys).ToList();
 
-            //var pperms = solver.GetLetterPermutations(p).ToList();
-            //Console.WriteLine($"Phrase permutations: {pperms.Count}");
-
-            //var parts0 = solver.GetPhrasePartitions(p).ToList();
-            //var parts = solver.GetValidPartitions(p).ToList();
-            //Console.WriteLine($"Valid permutations: {parts.Count()}");
-
-            //var sentences = parts.AsParallel().SelectMany(per => solver.GetPartitionSentences(per)).ToList();
-            //Console.WriteLine($"Sentences: {sentences.Count}");
-
-            //var perms = sentences.AsParallel().SelectMany(solver.GetSentencePermutations);
-            //Console.WriteLine($"Sentence permutations: {perms.Count}");
-
-            //foreach (var phrase in perms)
-            //{
-            //if (easyHashMatches(phrase))
-            //{
-            //    LogResult($"MED:{phrase}, elapsed: {sw.Elapsed}");
-            //    break;
-            //}
-            //}
-            //var solver = new AnagramGenerator3000(wordlist);
-            //solver.FindAnagrams(Phrase);
+            Parallel.ForEach(sentences, (sentence, loopState) =>
+            {
+                if(easyHashMatches(sentence))
+                {
+                    results.Add($"EASY:{sentence}");
+                    Interlocked.Increment(ref found);
+                }
+                if(mediumHashMatches(sentence))
+                {
+                    results.Add($"MED:{sentence}");
+                    Interlocked.Increment(ref found);
+                }
+                if (hardHashMatches(sentence))
+                {
+                    results.Add($"HARD:{sentence}");
+                    Interlocked.Increment(ref found);
+                }
+                if (Interlocked.Read(ref found) == 3) loopState.Stop();
+            });
 
             sw.Stop();
+
+            foreach(var result in results)
+            {
+                LogResult(result);
+            }
 
             Console.WriteLine($"Done, elapsed: {sw.Elapsed}");
             Console.ReadKey();

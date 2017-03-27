@@ -21,6 +21,7 @@ namespace TPAnagramFinder
 
         private VectorConverter _vectorConverter;
         private Vector<byte>[] _keyVectors;
+        private Dictionary<int, Vector<byte>[]> _keyVectorsByLength;
         private Vector<byte> _phraseVector;
 
         public AnagramGenerator3000(string[] wordlist, int minWordLength = 4, int maxWordsPerSentence = 4)
@@ -56,6 +57,9 @@ namespace TPAnagramFinder
                 .Select(k => _vectorConverter.CovertString(k))
                 .ToArray();
 
+            _keyVectorsByLength = Enumerable.Range(0, _phraseClean.Length + 1)
+                .ToDictionary(index => index, index => _keyVectors.Where(kv => _vectorConverter.GetVectorComponentSum(kv) <= index).ToArray());
+
             _phraseVector = _vectorConverter.CovertString(_phraseClean);
         }
 
@@ -86,7 +90,7 @@ namespace TPAnagramFinder
                 yield break;
             }
 
-            foreach(var key in _keyVectors)
+            foreach (var key in _keyVectorsByLength[_vectorConverter.GetVectorComponentSum(remainingValues)])
             {
                 if (Vector.GreaterThanOrEqualAll(remainingValues, key))
                 {
@@ -129,6 +133,24 @@ namespace TPAnagramFinder
                     }
                     currentCombination.Remove(key);
                 }
+            }
+        }
+
+        public IEnumerable<IEnumerable<string>> ConvertVectorCombinationsToKeyCombinations(IEnumerable<IEnumerable<Vector<byte>>> vectorCombinations)
+        {
+            var result = new ConcurrentBag<IEnumerable<string>>();
+            Parallel.ForEach(vectorCombinations, vectorCombination =>
+            {
+                result.Add(ConvertVectorCombinationToKeyCombination(vectorCombination).ToList());
+            });
+            return result;
+        }
+
+        private IEnumerable<string> ConvertVectorCombinationToKeyCombination(IEnumerable<Vector<byte>> vectorCombination)
+        {
+            foreach (var vector in vectorCombination)
+            {
+                yield return _vectorConverter.GetStringValue(vector);
             }
         }
 

@@ -46,5 +46,11 @@ namespace TPAnagramFinder
             }
             return sb.ToString();
         }
+
+        // TODO extension
+        public byte GetVectorComponentSum(Vector<byte> input)
+        {
+            return Vector.Dot(input, Vector<byte>.One);
+        }
     }
 }

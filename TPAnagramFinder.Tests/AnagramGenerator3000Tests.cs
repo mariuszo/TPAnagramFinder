@@ -68,22 +68,55 @@ namespace TPAnagramFinder.Tests
             var generator = new AnagramGenerator3000(dict, 1);
             var phrase = "aaet";
             generator.BuildDictionary(phrase);
+            var expected = new[]
+            {
+                new [] { CreateVector(1), CreateVector(1, 1, 1) },
+                new [] { CreateVector(1, 1, 1), CreateVector(1) }
+            }
+            .SelectMany(c => c)
+            .ToList();
+            
+            var actual = generator.GenerateVectorCombinations().ToList();
+
+            Assert.AreEqual(2, actual.Count);
+            CollectionAssert.AreEquivalent(expected, actual.SelectMany(c => c).ToList());
+        }
+
+        [TestMethod]
+        public void Test_ConvertVectorCombinationsToKeyCombinations()
+        {
+            var dict = new[] { "a", "tea", "ate", "eat" };
+            var generator = new AnagramGenerator3000(dict, 1);
+            var phrase = "aaet";
+            generator.BuildDictionary(phrase);
+            var combinations = new[]
+            {
+                new [] { CreateVector(1), CreateVector(1, 1, 1) },
+                new [] { CreateVector(1, 1, 1), CreateVector(1) }
+            };
 
             var expected = new[]
             {
                 new [] { "a", "aet" },
                 new [] { "aet", "a" }
             }
-            .OrderBy(_ => _.First())
             .ToList();
 
-            var actual = generator.GenerateVectorCombinations().ToList();
+            var actual = generator.ConvertVectorCombinationsToKeyCombinations(combinations).ToList();
 
             Assert.AreEqual(2, actual.Count);
-            for (var i = 0; i < actual.Count; i++)
+
+            CollectionAssert.AreEquivalent(expected.SelectMany(w => w).ToList(), actual.SelectMany(w => w).ToList());
+        }
+
+        private Vector<byte> CreateVector(params byte[] values)
+        {
+            var b = new byte[Vector<byte>.Count];
+            for(var i = 0; i < values.Length; i++)
             {
-                CollectionAssert.AreEquivalent(expected[i], actual[i].ToList());
+                b[i] = values[i];
             }
+            return new Vector<byte>(b);
         }
     }
 }
