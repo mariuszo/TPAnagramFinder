@@ -1,59 +1,19 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace TPAnagramFinder.Tests
 {
     [TestClass]
-    public class AnagramGenerator3000Tests
+    public class AnagramGeneratorTests
     {
-        [TestMethod]
-        public void Test_GetKeyCombinations1()
-        {
-            var dict = new[] { "a", "tea", "ate", "eat" };
-            var generator = new AnagramGenerator3000(dict, 1);
-            var phrase = "aaet";
-            generator.BuildDictionary(phrase);
-
-            var expected = new[]
-            {
-                new [] { "a", "aet" },
-                new [] { "aet", "a" }
-            }.OrderBy(_ => _.First())
-            .ToList();
-
-            var actual = generator.GetKeyCombinations().OrderBy(_ => _.First()).ToList();
-
-            Assert.AreEqual(2, actual.Count);
-            for(var i = 0; i < actual.Count; i++)
-            {
-                CollectionAssert.AreEquivalent(expected[i], actual[i].ToList());
-            }
-        }
-
-        //[TestMethod]
-        //public void Test_GetKeyCombinations2()
-        //{
-        //    var dict = new[] { "a", "tea", "ate", "eat" };
-        //    var generator = new AnagramGenerator3000(dict, 1);
-        //    var phrase = "aaet";
-        //    generator.BuildDictionary(phrase);
-
-        //    var actual = generator.GetKeyCombinations(phrase, new List<string>()).ToList();
-
-        //    Assert.AreEqual(2, actual.Count);
-        //}
-
         [TestMethod]
         public void Test_GetSentenceByKeys()
         {
             var dict = new[] { "a", "tea", "ate", "eat" };
-            var generator = new AnagramGenerator3000(dict, 1);
+            var generator = new AnagramGenerator(dict, 1);
             var phrase = "aaet";
-            generator.BuildDictionary(phrase);
+            generator.Initialize(phrase);
 
             var actual = generator.GetSentenceByKeys(new[] { "a", "aet" }).ToList();
 
@@ -65,9 +25,9 @@ namespace TPAnagramFinder.Tests
         public void Test_GenerateVectorCombinations()
         {
             var dict = new[] { "a", "tea", "ate", "eat" };
-            var generator = new AnagramGenerator3000(dict, 1);
+            var generator = new AnagramGenerator(dict, 1);
             var phrase = "aaet";
-            generator.BuildDictionary(phrase);
+            generator.Initialize(phrase);
             var expected = new[]
             {
                 new [] { CreateVector(1), CreateVector(1, 1, 1) },
@@ -86,9 +46,9 @@ namespace TPAnagramFinder.Tests
         public void Test_ConvertVectorCombinationsToKeyCombinations()
         {
             var dict = new[] { "a", "tea", "ate", "eat" };
-            var generator = new AnagramGenerator3000(dict, 1);
+            var generator = new AnagramGenerator(dict, 1);
             var phrase = "aaet";
-            generator.BuildDictionary(phrase);
+            generator.Initialize(phrase);
             var combinations = new[]
             {
                 new [] { CreateVector(1), CreateVector(1, 1, 1) },

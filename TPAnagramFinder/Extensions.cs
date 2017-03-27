@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using System.Text;
+using System.Numerics;
 
 namespace TPAnagramFinder
 {
@@ -10,14 +10,9 @@ namespace TPAnagramFinder
             return !word.Except(set).Any();
         }
 
-        public static StringBuilder Pop(this StringBuilder builder)
+        public static byte GetVectorComponentSum(this Vector<byte> vector)
         {
-            return builder.Remove(builder.Length - 1, 1);
-        }
-
-        public static int WhiteSpaceCount(this StringBuilder builder)
-        {
-            return builder.ToString().Count(char.IsWhiteSpace);
+            return Vector.Dot(vector, Vector<byte>.One);
         }
     }
 }

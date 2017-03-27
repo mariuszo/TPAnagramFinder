@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -19,9 +18,6 @@ namespace TPAnagramFinder
 
         private const string Phrase = "poultry outwits ants";
 
-        //also input towy ruts
-        private const string TestHash = "8c2ea82e9a1d56db0d597e5798307a4a";
-
         private static ThreadLocal<MD5> _md5;
 
         private static void Main(string[] args)
@@ -29,33 +25,23 @@ namespace TPAnagramFinder
             var wordlist = File.ReadAllLines(args[0]);
             _md5 = new ThreadLocal<MD5>(() => MD5.Create());
 
-            var testHashMatches = GetHashMatcher(GetHashStringBytes(TestHash));
             var easyHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashEasy));
             var mediumHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashMedium));
             var hardHashMatches = GetHashMatcher(GetHashStringBytes(PhraseHashHard));
 
-            var sw = Stopwatch.StartNew();
-
-            //var trie = new TrieAnagramSolver(wordlist, Phrase);
-            //foreach (var phrase in trie.FindAnagrams())
-            //{
-            //    if (mediumHashMatches(phrase))
-            //    {
-            //        LogResult($"MED:{phrase}, elapsed: {sw.Elapsed}");
-            //        break;
-            //    }
-            //}
-
             var results = new ConcurrentBag<string>();
             long found = 0;
 
-            var solver = new AnagramGenerator3000(wordlist, 1, 4);
-            solver.BuildDictionary(Phrase);
-            var combos = solver.GenerateVectorCombinations().ToList();
-            var keys = solver.ConvertVectorCombinationsToKeyCombinations(combos).ToList();
-            var sentences = solver.GetSentences(keys).ToList();
+            var generator = new AnagramGenerator(wordlist, 1, 4);
 
-            Parallel.ForEach(sentences, (sentence, loopState) =>
+            var sw = Stopwatch.StartNew();
+
+            //generator.Initialize(Phrase);
+            //var combos = solver.GenerateVectorCombinations().ToList();
+            //var keys = solver.ConvertVectorCombinationsToKeyCombinations(combos).ToList();
+            //var sentences = solver.GetSentences(keys).ToList();
+
+            Parallel.ForEach(generator.FindAnagrams(Phrase), (sentence, loopState) =>
             {
                 if(easyHashMatches(sentence))
                 {
@@ -72,7 +58,8 @@ namespace TPAnagramFinder
                     results.Add($"HARD:{sentence}");
                     Interlocked.Increment(ref found);
                 }
-                if (Interlocked.Read(ref found) == 3) loopState.Stop();
+                // Safe for 64bit systems
+                if (found == 3) loopState.Stop();
             });
 
             sw.Stop();
