@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace TPAnagramFinder.Tests
@@ -24,7 +25,7 @@ namespace TPAnagramFinder.Tests
             }.OrderBy(_ => _.First())
             .ToList();
 
-            var actual = generator.GetKeyCombinations(generator.BuildLetterInventory(phrase)).OrderBy(_ => _.First()).ToList();
+            var actual = generator.GetKeyCombinations().OrderBy(_ => _.First()).ToList();
 
             Assert.AreEqual(2, actual.Count);
             for(var i = 0; i < actual.Count; i++)
@@ -58,6 +59,31 @@ namespace TPAnagramFinder.Tests
 
             Assert.AreEqual(3, actual.Count);
             CollectionAssert.AreEquivalent(new[] { "a eat", "a tea", "a ate" }, actual);
+        }
+
+        [TestMethod]
+        public void Test_GenerateVectorCombinations()
+        {
+            var dict = new[] { "a", "tea", "ate", "eat" };
+            var generator = new AnagramGenerator3000(dict, 1);
+            var phrase = "aaet";
+            generator.BuildDictionary(phrase);
+
+            var expected = new[]
+            {
+                new [] { "a", "aet" },
+                new [] { "aet", "a" }
+            }
+            .OrderBy(_ => _.First())
+            .ToList();
+
+            var actual = generator.GenerateVectorCombinations().ToList();
+
+            Assert.AreEqual(2, actual.Count);
+            for (var i = 0; i < actual.Count; i++)
+            {
+                CollectionAssert.AreEquivalent(expected[i], actual[i].ToList());
+            }
         }
     }
 }

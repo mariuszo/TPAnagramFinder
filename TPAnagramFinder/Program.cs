@@ -54,10 +54,10 @@ namespace TPAnagramFinder
             //    }
             //}
 
-            var solver = new AnagramGenerator3000(wordlist, 5);
-            var letterInventory = string.Join("", Phrase.Replace(" ", "").Trim().ToLower().OrderBy(_ => _));
-            solver.BuildDictionary(letterInventory);
-            var combos = solver.GetKeyCombinations(solver.BuildLetterInventory(letterInventory)).ToList();
+            var solver = new AnagramGenerator3000(wordlist, 1, 4);
+            solver.BuildDictionary(Phrase);
+            //var combos = solver.GenerateVectorCombinations().ToList();
+            //var combos = solver.GetKeyCombinations().ToList();
             //var sentences = solver.GetSentences(combos).ToList();
  
             //var p = string.Join("", Phrase.Trim().Replace(" ", "").ToLower().OrderBy(_ => _));

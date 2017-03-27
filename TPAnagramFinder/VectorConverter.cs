@@ -14,12 +14,7 @@ namespace TPAnagramFinder
 
         public VectorConverter(string seed)
         {
-            var charCounts = seed
-                .OrderBy(c => c)
-                .GroupBy(c => c)
-                .ToDictionary(g => g.Key, g => g.Count());
-
-            _availableCharacters = charCounts.Select(c => c.Key).OrderBy(c => c).ToArray();
+            _availableCharacters = seed.Distinct().OrderBy(c => c).ToArray();
 
             _charMap = Enumerable.Range(0, _availableCharacters.Length).ToDictionary(index => index, index => _availableCharacters[index]);
             _indexMap = Enumerable.Range(0, _availableCharacters.Length).ToDictionary(index => _availableCharacters[index], index => index);
