@@ -4,3 +4,5 @@ TPAnagramFinder.Tests/bin/**
 TPAnagramFinder.Tests/obj/**
 .vs/**
 results.txt
+TPAnagramFinder/Properties/**
+TPAnagramFinder/TpAnagramFinder.csproj.user

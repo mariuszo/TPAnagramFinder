@@ -22,6 +22,12 @@ namespace TPAnagramFinder
 
         private static void Main(string[] args)
         {
+            if (!args.Any())
+            {
+                Console.WriteLine($"Usage: {Process.GetCurrentProcess().ProcessName} <path_to_wordlist>");
+                return;
+            }
+            
             var wordlist = File.ReadAllLines(args[0]);
             _md5 = new ThreadLocal<MD5>(() => MD5.Create());
 
