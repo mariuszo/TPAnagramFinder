@@ -36,11 +36,6 @@ namespace TPAnagramFinder
 
             var sw = Stopwatch.StartNew();
 
-            //generator.Initialize(Phrase);
-            //var combos = solver.GenerateVectorCombinations().ToList();
-            //var keys = solver.ConvertVectorCombinationsToKeyCombinations(combos).ToList();
-            //var sentences = solver.GetSentences(keys).ToList();
-
             Parallel.ForEach(generator.FindAnagrams(Phrase), (sentence, loopState) =>
             {
                 if(easyHashMatches(sentence))

@@ -32,9 +32,13 @@ namespace TPAnagramFinder
 
         public void Initialize(string phrase)
         {
+            // Clean phrase
             _phrase = phrase;
             _phraseClean = string.Join("", phrase.Trim().ToLower().Replace(" ", "").OrderBy(_ => _));
 
+            // Reduce initial wordlist by filtering unnecessary words
+            // Create dictionary, where each key - letters of a word arranged in ascending order
+            // value - words, consisting of letters from the key
             _dictionary = _wordlist
                 .Where(w => w.Length >= _minWordLength)
                 .Where(w => w.IsSubSet(_phraseClean))
@@ -47,10 +51,12 @@ namespace TPAnagramFinder
 
             _vectorConverter = new VectorConverter(_phraseClean);
 
+            // Convert each dictionary key into its vector representation
             var keyVectors = _dictionary.Keys
                 .Select(k => _vectorConverter.CovertString(k))
                 .ToArray();
 
+            // Create a dictionary of key vector lists, where key - amount of remaining letters in each key
             _keyVectorsByLength = Enumerable.Range(0, _phraseClean.Length + 1)
                 .ToDictionary(index => index, index => keyVectors.Where(kv => kv.GetVectorComponentSum() <= index).ToArray());
 
@@ -61,14 +67,20 @@ namespace TPAnagramFinder
         {
             Initialize(phrase);
 
-            return GetSentences(ConvertVectorCombinationsToKeyCombinations(GenerateVectorCombinations()));
-        }
+            var combinations = GenerateVectorCombinations().ToList();
 
+            return GetSentences(ConvertVectorCombinationsToKeyCombinations(combinations));
+        }
+        
         public IEnumerable<IEnumerable<Vector<byte>>> GenerateVectorCombinations()
         {
             return GenerateVectorCombinations(new List<Vector<byte>>(), _phraseVector);
         }
 
+        // Generate all key vector combinations and permutations.
+        // Limit amount of combinations to maxWordsPerSentence.
+        // Generate combinations by subtracting each key vector from remaining letter vector
+        // and adding key to key combination collection, until all elements in remaining letter vector are 0.
         private IEnumerable<IEnumerable<Vector<byte>>> GenerateVectorCombinations(List<Vector<byte>> currentCombination, Vector<byte> remainingValues)
         {
             if (Vector.EqualsAll(remainingValues, Vector<byte>.Zero))
@@ -96,6 +108,7 @@ namespace TPAnagramFinder
             }
         }
 
+        // Convert vector combinations to key combinations
         public IEnumerable<IEnumerable<string>> ConvertVectorCombinationsToKeyCombinations(IEnumerable<IEnumerable<Vector<byte>>> vectorCombinations)
         {
             var result = new ConcurrentBag<IEnumerable<string>>();
@@ -106,6 +119,7 @@ namespace TPAnagramFinder
             return result;
         }
 
+        // Convert list of vectors into list of strings
         private IEnumerable<string> ConvertVectorCombinationToKeyCombination(IEnumerable<Vector<byte>> vectorCombination)
         {
             foreach (var vector in vectorCombination)
@@ -114,6 +128,9 @@ namespace TPAnagramFinder
             }
         }
 
+        // Generate sentences from key combinations.
+        // Fetch words by key from dictionary and combine it with rest
+        // of words retrieved from remaining keys.
         public IEnumerable<string> GetSentences(IEnumerable<IEnumerable<string>> keyCombinations)
         {
             var results = new ConcurrentBag<string>();
