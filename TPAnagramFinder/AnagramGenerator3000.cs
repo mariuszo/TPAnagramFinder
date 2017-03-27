@@ -86,6 +86,11 @@ namespace TPAnagramFinder
         //    }
         //}
 
+
+        // TODO 
+        // limit on word count
+        // efficient inventory check/update
+        // permutations / hashing
         public IEnumerable<IEnumerable<string>> GetKeyCombinations(string letterInventory)
         {
             if (letterInventory.Length == 0)
